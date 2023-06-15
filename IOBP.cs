@@ -27,17 +27,17 @@ namespace NinjaTrader.NinjaScript.Indicators
 {
 	public class AMIKEIOBP : Indicator
 	{
-        private double close_;
-        private double low_;
-        private double high_;
-        private double open_;
-        private int bar_index_;
+        private double 		close_;
+        private double 		low_;
+        private double 		high_;
+        private double 		open_;
+        private int 		bar_index_;
 		
-		private bool highob;
-        private bool lowob;
+		private bool 		highob;
+        private bool 		lowob;
 				
-		private bool bearob = false;
-		private bool bullob = false;
+		private bool 		bearob = false;
+		private bool 		bullob = false;
 		
 		private int     	numberofline;
 		private double 		upperphzone;
@@ -145,43 +145,29 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if (CurrentBar <= offset)
 				return;
 			
-			// Print("Count: " + Close.Count + ", CurrentBar: " + CurrentBar);
             close_ = Close[offset];
             low_ = Low[offset];
             high_ = High[offset];
             open_ = Open[offset];
-			// bar_index_ = CurrentBar - offset;
 			bar_index_ = CurrentBars[0];// - offset;
 
 			int bearcandle 	= 0;
         	int bullcandle 	= 0;
 			int po		 	= -offset;
 			
-			Print("--------------------");
-			// Print("bar_index_: " + bar_index_ + ", CurrentBar: " + CurrentBar);
-			// Print("high_: " + high_ + ", open_: " + open_ + ", low_: " + low_ + ", close_: " + close_ + ", offset: " + offset);
-            
 			for (int i = 1; i <= Ob; i++)
             {
 				double CloseI = Close[i];
 				double OpenI = Open[i];
-				// Print("CloseI: " + CloseI + ", OpenI: " + OpenI);
 
 				bearcandle = bearcandle + (CloseI < OpenI ? 1 : 0);
                 bullcandle = bullcandle + (CloseI > OpenI ? 1 : 0);
-				
-				// Print("bearcandle: " + bearcandle + ", bullcandle: " + bullcandle);
             }
 
             double abs = Math.Abs(Close[offset] - Close[1]) / Close[offset] * 100;
             bool absmove = abs >= Percmove;
             bool beardir = Close[offset] > Open[offset];
             bool bulldir = Close[offset] < Open[offset];
-			
-			// Print("abs: " + abs);
-			// Print("absmove: " + absmove);
-			// Print("beardir: " + beardir);
-			// Print("bulldir: " + bulldir);
 			
             highob = beardir && (bearcandle == (Ob)) && absmove;
             lowob = bulldir && (bullcandle == (Ob)) && absmove;
@@ -195,8 +181,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 			bearob = highob;
 			bullob = lowob;
 
-		
-			// This part is for putting Triangle mark.
 			NinjaTrader.Gui.Tools.SimpleFont myFont = new NinjaTrader.Gui.Tools.SimpleFont("Courier New", 12) { Size = 12, Bold = false };
 			
 			if (bearob)
@@ -247,7 +231,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 			if (upperplzonearr.Count > 0)
 			{
-				for (int i = 0, j = 0; i < upperplzonearr.Count - 1; i ++)
+				for (int i = 0; i < upperplzonearr.Count - 1; i ++)
 				{
 					LineData tempupperline = (LineData) upperphzonearr[i];
 					LineData templowerline = (LineData) upperplzonearr[i];
@@ -271,8 +255,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 						upperphzonearr[i] = tempupperline;
 						templowerline.endTime = Bars.GetTime(CurrentBar);
 						upperplzonearr[i] = templowerline;
-						// labelpharr[i] = -1;
-						// Print("i: " + i);
 					}
 
 					Draw.Line(this, "upperphzone_" + i, false, tempupperline.startTime, tempupperline.startY, tempupperline.endTime, tempupperline.endY, Brushes.Red, DashStyleHelper.Solid, 2);
@@ -294,21 +276,21 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 			if (bullob && Rline) 
 			{
-				lowerphzone = Low[0];
-				lowerplzone = Close[0] < Open[0] ? Open[0] : Close[0];
+				lowerplzone = Low[0];
+				lowerphzone = Close[0] < Open[0] ? Open[0] : Close[0];
 
 				if (Layout == "Zone")
 				{
-					lowerplzoneline.SetParams(Bars.GetTime(bar_index_), lowerplzone, Bars.GetTime(CurrentBar), lowerplzone);
+					lowerphzoneline.SetParams(Bars.GetTime(bar_index_), lowerphzone, Bars.GetTime(CurrentBar), lowerphzone);
 				}
 
 				if (Layout != "Average")
 				{
-					lowerphzoneline.SetParams(Bars.GetTime(bar_index_), lowerphzone, Bars.GetTime(CurrentBar), lowerphzone);
+					lowerplzoneline.SetParams(Bars.GetTime(bar_index_), lowerplzone, Bars.GetTime(CurrentBar), lowerplzone);
 				}
 				else 
 				{
-					lowerphzoneline.SetParams(Bars.GetTime(bar_index_), (lowerplzone + lowerphzone) / 2, Bars.GetTime(CurrentBar), (lowerplzone + lowerphzone) / 2);
+					lowerplzoneline.SetParams(Bars.GetTime(bar_index_), (lowerplzone + lowerphzone) / 2, Bars.GetTime(CurrentBar), (lowerplzone + lowerphzone) / 2);
 				}
 
 				if (lowerphzonearr.Count > numberofline)
@@ -322,12 +304,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 				lowerphzonearr.Add(lowerphzoneline);
 				lowerplzonearr.Add(lowerplzoneline);
 				lowerzonetestedarr.Add(false);
-				labelplarr.Add(lowerphzoneline);
+				labelplarr.Add(lowerplzoneline);
 			}
 
 			if (lowerplzonearr.Count > 0)
 			{
-				for (int i = 0, j = 0; i < lowerplzonearr.Count - 1; i ++)
+				for (int i = 0; i < lowerplzonearr.Count - 1; i ++)
 				{
 					LineData tempupperline = (LineData) lowerphzonearr[i];
 					LineData templowerline = (LineData) lowerplzonearr[i];
@@ -359,8 +341,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 				{
 					if (labelplarr[i] != null)
 					{
-						LineData tempupperline = (LineData) labelplarr[i];
-						Draw.Text(this, "tagBottomRetracement_" + i, true, "Bottom Retracement - " + tempupperline.startY, -2, tempupperline.startY, 0, Brushes.Green, myFont, TextAlignment.Left, null, null, 1);
+						LineData templowerline = (LineData) labelplarr[i];
+						Draw.Text(this, "tagBottomRetracement_" + i, true, "Bottom Retracement - " + templowerline.startY, -2, templowerline.startY, 0, Brushes.Green, myFont, TextAlignment.Left, null, null, 1);
 					}
 					else
 						RemoveDrawObject("tagBottomRetracement_" + i);
