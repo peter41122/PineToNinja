@@ -56,7 +56,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private ArrayList	lowerplzonearr;
 		private ArrayList	lowerzonetestedarr;
 
-
 		private struct LineData
 		{
 			public DateTime startTime { get; set; }
@@ -140,7 +139,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if (CurrentBar <= offset)
 				return;
 			
-			Print("Count: " + Close.Count + ", CurrentBar: " + CurrentBar);
+			// Print("Count: " + Close.Count + ", CurrentBar: " + CurrentBar);
             close_ = Close[offset];
             low_ = Low[offset];
             high_ = High[offset];
@@ -153,7 +152,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			int po		 	= -offset;
 			
 			Print("--------------------");
-			Print("bar_index_: " + bar_index_ + ", CurrentBar: " + CurrentBar);
+			// Print("bar_index_: " + bar_index_ + ", CurrentBar: " + CurrentBar);
 			// Print("high_: " + high_ + ", open_: " + open_ + ", low_: " + low_ + ", close_: " + close_ + ", offset: " + offset);
             
 			for (int i = 1; i <= Ob; i++)
@@ -190,54 +189,27 @@ namespace NinjaTrader.NinjaScript.Indicators
 			bearob = highob;
 			bullob = lowob;
 
-			// Print("bearob: " + bearob);
-			// Print("bullob: " + bullob);
-			// Print("High[0]: " + High[0] + ", Low[0]: " + Low[0]);
-			
+		
 			// This part is for putting Triangle mark.
 			NinjaTrader.Gui.Tools.SimpleFont myFont = new NinjaTrader.Gui.Tools.SimpleFont("Courier New", 12) { Size = 12, Bold = false };
 			
 			if (bearob)
 			{
 			 	BearishOrderBlock[0] = High[0] + 0.1;
-				// BearishOrderBlockPrice[0] = High[0];
 				Draw.Text(this, "tagHigh_" + CurrentBar, false, High[0].ToString(), 0, High[0], 50, Brushes.Red, myFont, TextAlignment.Center, null, null, 1);
-				// Draw.Line(this, "tagHLine_" + CurrentBar, false, 0, High[0], -25, High[0], Brushes.Red, DashStyleHelper.Solid, 2);
+				CandleOutlineBrushes[0] = Brushes.Green;
 			}
 			if (bullob)
 			{
 			 	BullishOrderBlock[0] = Low[0] - 0.1;
-				// BullishOrderBlockPrice[0] = bullobprice;
 				Draw.Text(this, "tagLow_" + CurrentBar, true, Low[0].ToString(), 0, Low[0], -50, Brushes.Green, myFont, TextAlignment.Center, null, null, 1);
-				// Draw.Line(this, "tagLLine_" + CurrentBar, false, 0, Low[0], -15, Low[0], Brushes.Green, DashStyleHelper.Solid, 2);
+				CandleOutlineBrushes[0] = Brushes.Red;
 			}
 			
-		    // // Specify the coordinates of the line
-			// DateTime startDateTime = Bars.GetTime(Bars.Count - 100);
-			// Print("-----Test Print-----");
-			// double startY = 4422; // Y coordinate of the starting point
-			// DateTime endDateTime = Bars.GetTime(Bars.Count - 1);
-			// double endY = 4422; // Y coordinate of the ending point
-			// Print("startDateTime: " + startDateTime + "endDateTime: " + endDateTime);
-
-			// // Draw the line
-			// Draw.Line(this, "MyLine", false, startDateTime, startY, endDateTime, endY, Brushes.Green, DashStyleHelper.Solid, 2);
-
-
-                // if (Layout == "Zone")
-                //     Draw.Line(this, "tagZoneLine_" + CurrentBar, true, 0, upperplzone, -1, upperplzone, Brushes.Red, DashStyleHelper.Solid, 2);
-                // // else
-                // //     upperplzoneline = -1;
-
-                // if (Layout != "Average")
-                //     Draw.Line(this, "tagAvgLine_" + CurrentBar, true, 0, upperphzone, -1, upperphzone, Brushes.Red, DashStyleHelper.Solid, 2);
-                // else
-                //     Draw.Line(this, "tagAvgLine_" + CurrentBar, true, 0, (upperphzone + upperplzone) / 2, -1, (upperphzone + upperplzone) / 2, Brushes.Red, DashStyleHelper.Solid, 2);
-
 			if (bearob && Rline)
 			{
-				upperphzone = high_;
-				upperplzone = close_ < open_ ? close_ : open_;
+				upperphzone = High[0];
+				upperplzone = Close[0] < Open[0] ? Close[0] : Open[0];
 
 				if (Layout == "Zone")
 				{
@@ -265,9 +237,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 				upperzonetestedarr.Add(false);
 			}
 
+			ArrayList topRetTextArr = new ArrayList();
 			if (upperplzonearr.Count > 0)
 			{
-				for (int i = 0; i < upperplzonearr.Count - 1; i ++)
+				for (int i = 0, j = 0; i < upperplzonearr.Count - 1; i ++)
 				{
 					LineData tempupperline = (LineData) upperphzonearr[i];
 					LineData templowerline = (LineData) upperplzonearr[i];
@@ -275,15 +248,23 @@ namespace NinjaTrader.NinjaScript.Indicators
 					bool crossed = High[0] > tempupperline.startY;
 
 					if (crossed && !tested)
+					{
 						upperzonetestedarr[i] = true;
-					if (Crossalerts && crossed && !tested)
+					}
+					
+					if (Crossalerts && crossed && !tested) 
+					{
 						upperzonetestedarr[i] = true;
+					}
 					else if (!tested)
 					{
 						tempupperline.endTime = Bars.GetTime(CurrentBar);
 						upperphzonearr[i] = tempupperline;
 						templowerline.endTime = Bars.GetTime(CurrentBar);
 						upperplzonearr[i] = templowerline;
+						topRetTextArr.Add(tempupperline);
+						Print("i: " + i);
+						Draw.Text(this, "tagTopRetracement_" + j++, true, "Top Retracement - " + tempupperline.startY, -2, tempupperline.startY, 0, Brushes.Red, myFont, TextAlignment.Left, null, null, 1);
 					}
 
 					Draw.Line(this, "upperphzone_" + i, false, tempupperline.startTime, tempupperline.startY, tempupperline.endTime, tempupperline.endY, Brushes.Red, DashStyleHelper.Solid, 2);
@@ -294,8 +275,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 			if (bullob && Rline) 
 			{
-				lowerphzone = low_;
-				lowerplzone = close_ < open_ ? open_ : close_;
+				lowerphzone = Low[0];
+				lowerplzone = Close[0] < Open[0] ? Open[0] : Close[0];
 
 				if (Layout == "Zone")
 				{
@@ -325,7 +306,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 			if (lowerplzonearr.Count > 0)
 			{
-				for (int i = 0; i < lowerplzonearr.Count - 1; i ++)
+				for (int i = 0, j = 0; i < lowerplzonearr.Count - 1; i ++)
 				{
 					LineData tempupperline = (LineData) lowerphzonearr[i];
 					LineData templowerline = (LineData) lowerplzonearr[i];
@@ -342,8 +323,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 						lowerphzonearr[i] = tempupperline;
 						templowerline.endTime = Bars.GetTime(CurrentBar);
 						lowerplzonearr[i] = templowerline;
+						Draw.Text(this, "tagBottomRetracement_" + j++, false, "Bottom Retracement - " + tempupperline.startY, -2, tempupperline.startY, 0, Brushes.Green, myFont, TextAlignment.Left, null, null, 1);
 					}
-
 
 					Draw.Line(this, "lowerphzone_" + i, false, tempupperline.startTime, tempupperline.startY, tempupperline.endTime, tempupperline.endY, Brushes.Green, DashStyleHelper.Solid, 2);
 					Draw.Line(this, "lowerplzone_" + i, false, templowerline.startTime, templowerline.startY, templowerline.endTime, templowerline.endY, Brushes.Green, DashStyleHelper.Solid, 2);
