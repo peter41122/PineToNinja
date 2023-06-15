@@ -56,6 +56,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private ArrayList	lowerplzonearr;
 		private ArrayList	lowerzonetestedarr;
 
+		private ArrayList	labelpharr;
+
 		private struct LineData
 		{
 			public DateTime startTime { get; set; }
@@ -128,6 +130,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 				lowerphzonearr = new ArrayList();
 				lowerplzonearr = new ArrayList();
 				lowerzonetestedarr = new ArrayList();
+
+				labelpharr = new ArrayList();
 			}
 		}
 
@@ -230,14 +234,15 @@ namespace NinjaTrader.NinjaScript.Indicators
 					upperphzonearr.RemoveAt(0);
 					upperplzonearr.RemoveAt(0);
 					upperzonetestedarr.RemoveAt(0);
+					labelpharr.RemoveAt(0);
 				}
 
 				upperphzonearr.Add(upperphzoneline);
 				upperplzonearr.Add(upperplzoneline);
 				upperzonetestedarr.Add(false);
+				labelpharr.Add(upperphzoneline);
 			}
 
-			ArrayList topRetTextArr = new ArrayList();
 			if (upperplzonearr.Count > 0)
 			{
 				for (int i = 0, j = 0; i < upperplzonearr.Count - 1; i ++)
@@ -250,11 +255,13 @@ namespace NinjaTrader.NinjaScript.Indicators
 					if (crossed && !tested)
 					{
 						upperzonetestedarr[i] = true;
+						labelpharr[i] = null;
 					}
 					
 					if (Crossalerts && crossed && !tested) 
 					{
 						upperzonetestedarr[i] = true;
+						labelpharr[i] = null;
 					}
 					else if (!tested)
 					{
@@ -262,13 +269,23 @@ namespace NinjaTrader.NinjaScript.Indicators
 						upperphzonearr[i] = tempupperline;
 						templowerline.endTime = Bars.GetTime(CurrentBar);
 						upperplzonearr[i] = templowerline;
-						topRetTextArr.Add(tempupperline);
-						Print("i: " + i);
-						Draw.Text(this, "tagTopRetracement_" + j++, true, "Top Retracement - " + tempupperline.startY, -2, tempupperline.startY, 0, Brushes.Red, myFont, TextAlignment.Left, null, null, 1);
+						// labelpharr[i] = -1;
+						// Print("i: " + i);
 					}
 
 					Draw.Line(this, "upperphzone_" + i, false, tempupperline.startTime, tempupperline.startY, tempupperline.endTime, tempupperline.endY, Brushes.Red, DashStyleHelper.Solid, 2);
 					Draw.Line(this, "upperplzone_" + i, false, templowerline.startTime, templowerline.startY, templowerline.endTime, templowerline.endY, Brushes.Red, DashStyleHelper.Solid, 2);
+				}
+
+				for (int i = 0; i < labelpharr.Count - 1; i ++)
+				{
+					if (labelpharr[i] != null)
+					{
+						LineData tempupperline = (LineData) labelpharr[i];
+						Draw.Text(this, "tagTopRetracement_" + i, true, "Top Retracement - " + tempupperline.startY, -2, tempupperline.startY, 0, Brushes.Red, myFont, TextAlignment.Left, null, null, 1);
+					}
+					else
+						RemoveDrawObject("tagTopRetracement_" + i);
 				}
 			}
 
