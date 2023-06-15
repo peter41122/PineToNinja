@@ -57,6 +57,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		private ArrayList	lowerzonetestedarr;
 
 		private ArrayList	labelpharr;
+		private ArrayList	labelplarr;
 
 		private struct LineData
 		{
@@ -132,6 +133,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				lowerzonetestedarr = new ArrayList();
 
 				labelpharr = new ArrayList();
+				labelplarr = new ArrayList();
 			}
 		}
 
@@ -314,11 +316,13 @@ namespace NinjaTrader.NinjaScript.Indicators
 					lowerphzonearr.RemoveAt(0);
 					lowerplzonearr.RemoveAt(0);
 					lowerzonetestedarr.RemoveAt(0);
+					labelplarr.RemoveAt(0);
 				}
 
 				lowerphzonearr.Add(lowerphzoneline);
 				lowerplzonearr.Add(lowerplzoneline);
 				lowerzonetestedarr.Add(false);
+				labelplarr.Add(lowerphzoneline);
 			}
 
 			if (lowerplzonearr.Count > 0)
@@ -330,22 +334,38 @@ namespace NinjaTrader.NinjaScript.Indicators
 					bool tested = (bool) lowerzonetestedarr[i];
 					bool crossed = Low[0] < templowerline.startY;
 
-					if (crossed && !tested)
+					if (crossed && !tested) 
+					{
 						lowerzonetestedarr[i] = true;
+						labelplarr[i] = null;
+					}
 					if (Crossalerts && crossed && !tested)
+					{
 						lowerzonetestedarr[i] = true;
+						labelplarr[i] = null;
+					}
 					else if (!tested)
 					{
 						tempupperline.endTime = Bars.GetTime(CurrentBar);
 						lowerphzonearr[i] = tempupperline;
 						templowerline.endTime = Bars.GetTime(CurrentBar);
 						lowerplzonearr[i] = templowerline;
-						Draw.Text(this, "tagBottomRetracement_" + j++, false, "Bottom Retracement - " + tempupperline.startY, -2, tempupperline.startY, 0, Brushes.Green, myFont, TextAlignment.Left, null, null, 1);
 					}
 
 					Draw.Line(this, "lowerphzone_" + i, false, tempupperline.startTime, tempupperline.startY, tempupperline.endTime, tempupperline.endY, Brushes.Green, DashStyleHelper.Solid, 2);
 					Draw.Line(this, "lowerplzone_" + i, false, templowerline.startTime, templowerline.startY, templowerline.endTime, templowerline.endY, Brushes.Green, DashStyleHelper.Solid, 2);
 				}
+				for (int i = 0; i < labelplarr.Count - 1; i ++)
+				{
+					if (labelplarr[i] != null)
+					{
+						LineData tempupperline = (LineData) labelplarr[i];
+						Draw.Text(this, "tagBottomRetracement_" + i, true, "Bottom Retracement - " + tempupperline.startY, -2, tempupperline.startY, 0, Brushes.Green, myFont, TextAlignment.Left, null, null, 1);
+					}
+					else
+						RemoveDrawObject("tagBottomRetracement_" + i);
+				}
+
 			}
 		}
 
